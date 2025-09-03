@@ -1,4 +1,6 @@
+// app/layout.tsx
 import "./globals.css";
+import Link from "next/link";
 
 export const metadata = {
   title: "ParrotTasks",
@@ -13,15 +15,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <header className="mb-8 flex items-center justify-between">
             <h1 className="text-2xl font-semibold">ParrotTasks</h1>
             <nav className="flex gap-4 text-sm">
-              <a href="/" className="hover:underline">Dashboard</a>
-              <a href="/uploads" className="hover:underline">Upload</a>
-              <a href="/recordings" className="hover:underline">Recordings</a>
-              <a href="/settings" className="hover:underline">Settings</a>
-              <a href="/about" className="hover:underline">About</a>
+              <Link href="/" className="hover:underline">Dashboard</Link>
+              <Link href="/uploads" className="hover:underline">Upload</Link>
+              <Link href="/recordings" className="hover:underline">Recordings</Link>
+              <Link href="/settings" className="hover:underline">Settings</Link>
+              <Link href="/about" className="hover:underline">About</Link>
             </nav>
           </header>
           <main>{children}</main>
-          <footer className="mt-12 text-xs text-gray-500">© {new Date().getFullYear()} ParrotTasks</footer>
+          <footer className="mt-12 text-xs text-gray-500">
+            © {new Date().getFullYear()} ParrotTasks
+          </footer>
         </div>
       </body>
     </html>
