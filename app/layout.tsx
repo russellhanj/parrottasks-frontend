@@ -1,6 +1,5 @@
-// app/layout.tsx
 import "./globals.css";
-import Link from "next/link";
+import Nav from "@/components/layout/Nav";
 
 export const metadata = {
   title: "ParrotTasks",
@@ -10,23 +9,12 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="min-h-dvh bg-gray-50 text-gray-900 antialiased">
-        <div className="mx-auto max-w-6xl p-6">
-          <header className="mb-8 flex items-center justify-between">
-            <h1 className="text-2xl font-semibold">ParrotTasks</h1>
-            <nav className="flex gap-4 text-sm">
-              <Link href="/" className="hover:underline">Dashboard</Link>
-              <Link href="/uploads" className="hover:underline">Upload</Link>
-              <Link href="/recordings" className="hover:underline">Recordings</Link>
-              <Link href="/settings" className="hover:underline">Settings</Link>
-              <Link href="/about" className="hover:underline">About</Link>
-            </nav>
-          </header>
-          <main>{children}</main>
-          <footer className="mt-12 text-xs text-gray-500">
-            © {new Date().getFullYear()} ParrotTasks
-          </footer>
-        </div>
+      <body className="min-h-dvh bg-brand-bg text-brand-text antialiased">
+        <Nav />
+        <main className="mx-auto max-w-6xl px-4 sm:px-6">{children}</main>
+        <footer className="mx-auto max-w-6xl px-4 sm:px-6 mt-12 text-xs text-gray-500 pb-8">
+          © {new Date().getFullYear()} ParrotTasks
+        </footer>
       </body>
     </html>
   );

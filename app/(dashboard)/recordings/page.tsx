@@ -7,10 +7,18 @@ import Tabs from "@/components/common/Tabs";
 export default function Page() {
   return (
     <section className="space-y-6">
-      <header>
-        <h2 className="text-xl font-semibold">Recordings</h2>
-        <p className="text-sm text-gray-600">List of recordings with status.</p>
-      </header>
+      <PageHeader
+        title="Recordings"
+        subtitle="List of recordings with status."
+        action={<Button variant="primary">Upload</Button>}
+      />
+
+      <Tabs tabs={["Summary", "Transcript", "Tasks"]} />
+
+      <div className="space-y-3">
+        <Alert variant="success">Task push to Wrike succeeded</Alert>
+        <Alert variant="error">Action extraction failed — retry</Alert>
+      </div>
 
       <div className="flex gap-2">
         <Chip variant="accent1">Queued</Chip>
