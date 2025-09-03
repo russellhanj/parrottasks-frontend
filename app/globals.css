@@ -1,21 +1,21 @@
+@config "../tailwind.config.ts";
 @import "tailwindcss";
 
+/* Brand background & text */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #FAFAFA;   /* light gray background */
+  --surface: #FFFFFF;      /* card surface */
+  --foreground: #2D3142;   /* primary text */
+  --muted: #6B7280;        /* secondary text */
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
+/* Optional: if you want dark mode override */
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
+    --surface: #1B263B;
     --foreground: #ededed;
+    --muted: #9CA3AF;
   }
 }
 
