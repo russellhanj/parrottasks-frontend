@@ -1,27 +1,8 @@
-"use client";
-
-import { useEffect, useState } from "react";
-
 export default function Page() {
-  const [status, setStatus] = useState<string>("checking...");
-
-  useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (!apiUrl) {
-      setStatus("NEXT_PUBLIC_API_URL not set");
-      return;
-    }
-
-    fetch(`${apiUrl}/healthz`)
-      .then((res) => res.json())
-      .then((data) => setStatus(data.ok ? "Backend is OK ✅" : "Backend error ❌"))
-      .catch(() => setStatus("Failed to reach backend ❌"));
-  }, []);
-
   return (
-    <main style={{ padding: 24 }}>
-      <h1 className="text-xl font-bold">ParrotTasks Frontend</h1>
-      <p>{status}</p>
+    <main className="flex min-h-screen flex-col items-center justify-center bg-gray-50">
+      <h1 className="text-5xl font-extrabold text-pink-600">Tailwind is working! 🎉</h1>
+      <p className="mt-4 text-lg text-gray-700">If this is pink & gray, you’re good.</p>
     </main>
   );
 }
