@@ -4,6 +4,10 @@ import Nav from "@/components/layout/Nav";
 export const metadata = {
   title: "ParrotTasks",
   description: "Transcribe → Summarize → Extract tasks → Push to Wrike",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
