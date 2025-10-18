@@ -1,21 +1,46 @@
-type Props = { params: { id: string } };
+// app/(dashboard)/recordings/[id]/page.tsx
+"use client";
 
-export default function Page({ params }: Props) {
-  const { id } = params;
+import { use, useEffect, useState } from "react";
+import { api } from "@/lib/api";
+
+type RouteParams = { id: string };
+
+export default function Page({ params }: { params: Promise<RouteParams> }) {
+  const { id } = use(params); // ✅ unwrap once
+
+  const [rec, setRec] = useState<any>(null);
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancel = false;
+    Promise.all([api.getRecording(id), api.listTasksFor(id)])
+      .then(([r, ts]) => { if (!cancel) { setRec(r); setTasks(ts); } })
+      .catch(e => !cancel && setErr(e instanceof Error ? e.message : "Load error"));
+    return () => { cancel = true; };
+  }, [id]);
+
+  if (err) return <div className="p-4 border bg-red-50">{err}</div>;
+  if (!rec) return <div className="p-4 border">Loading…</div>;
+
   return (
     <section className="space-y-6">
-      <header>
-        <h2 className="text-xl font-semibold">Recording #{id}</h2>
-        <p className="text-sm text-gray-600">Summary • Transcript • Tasks</p>
-      </header>
+      <div>
+        <h2 className="text-xl font-semibold">{rec.filename}</h2>
+        <p className="text-sm text-gray-500">{rec.status}</p>
+      </div>
 
-      <div className="rounded-xl border bg-white p-4">
-        <div className="mb-4 flex gap-2 text-sm">
-          <button className="rounded-md border px-3 py-1.5">Summary</button>
-          <button className="rounded-md border px-3 py-1.5">Transcript</button>
-          <button className="rounded-md border px-3 py-1.5">Tasks</button>
-        </div>
-        <div className="text-sm text-gray-600">Select a tab (placeholder).</div>
+      <div>
+        <h3 className="font-medium">Summary</h3>
+        <p className="text-sm">{rec.summary ?? "No summary yet."}</p>
+      </div>
+
+      <div>
+        <h3 className="font-medium">Tasks</h3>
+        <ul className="list-disc pl-6">
+          {tasks.map(t => <li key={t.id}>{t.title}{t.assignee ? ` — ${t.assignee}` : ""}</li>)}
+        </ul>
       </div>
     </section>
   );
