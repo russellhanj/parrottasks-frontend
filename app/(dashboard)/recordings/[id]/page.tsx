@@ -4,20 +4,42 @@
 import { use, useEffect, useState } from "react";
 import { api } from "@/lib/api";
 
-type RouteParams = { id: string };
+// local types (avoid any)
+type RecordingStatus = "uploaded" | "processing" | "transcribed" | "summarized" | "error";
+type RecDetail = {
+  id: string;
+  filename: string;
+  createdAt: string;
+  durationSec?: number;
+  status: RecordingStatus;
+  summary?: string | null;
+};
+type TaskItem = {
+  id: number | string;
+  recordingId: string;
+  title: string;
+  assignee?: string | null;
+  dueDate?: string | null;
+  priority?: "low" | "med" | "high" | null;
+  status?: "todo" | "doing" | "done";
+  confidence?: number | null;
+};
 
-export default function Page({ params }: { params: Promise<RouteParams> }) {
-  const { id } = use(params); // ✅ unwrap once
+export default function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params); // Next 15 params are a Promise
 
-  const [rec, setRec] = useState<any>(null);
-  const [tasks, setTasks] = useState<any[]>([]);
+  const [rec, setRec] = useState<RecDetail | null>(null);     // was any
+  const [tasks, setTasks] = useState<TaskItem[]>([]);         // was any[]
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
     let cancel = false;
     Promise.all([api.getRecording(id), api.listTasksFor(id)])
       .then(([r, ts]) => { if (!cancel) { setRec(r); setTasks(ts); } })
-      .catch(e => !cancel && setErr(e instanceof Error ? e.message : "Load error"));
+      .catch((e: unknown) => {
+        const msg = e instanceof Error ? e.message : String(e);
+        if (!cancel) setErr(msg);
+      });
     return () => { cancel = true; };
   }, [id]);
 
@@ -39,7 +61,11 @@ export default function Page({ params }: { params: Promise<RouteParams> }) {
       <div>
         <h3 className="font-medium">Tasks</h3>
         <ul className="list-disc pl-6">
-          {tasks.map(t => <li key={t.id}>{t.title}{t.assignee ? ` — ${t.assignee}` : ""}</li>)}
+          {tasks.map(t => (
+            <li key={String(t.id)}>
+              {t.title}{t.assignee ? ` — ${t.assignee}` : ""}
+            </li>
+          ))}
         </ul>
       </div>
     </section>
