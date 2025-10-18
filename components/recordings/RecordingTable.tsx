@@ -39,7 +39,7 @@ export default function RecordingTable({ rows }: { rows: RecordingRow[] }) {
               <td className="px-4 py-3">{formatDuration(r.durationSec)}</td>
               <td className="px-4 py-3">
                 <span className="inline-flex items-center gap-2">
-                  <StatusDot tone={toneFor(r.status)} />
+                    <StatusDot color={colorFor(r.status)} />
                   {labelFor(r.status)}
                 </span>
               </td>
@@ -75,15 +75,20 @@ function labelFor(s: RecordingRow["status"]) {
     default: return "Error";
   }
 }
-function toneFor(s: RecordingRow["status"]) {
+function colorFor(s: RecordingRow["status"]): string {
   switch (s) {
-    case "uploaded": return "warn" as const;
-    case "processing": return "warn" as const;
-    case "transcribed": return "ok" as const;
-    case "summarized": return "ok" as const;
-    default: return "bad" as const;
+    case "uploaded":
+    case "processing":
+      return "#f59e0b"; // amber-500
+    case "transcribed":
+    case "summarized":
+      return "#10b981"; // emerald-500
+    default:
+      return "#ef4444"; // red-500
   }
 }
+
+
 function formatDuration(sec?: number) {
   if (!sec && sec !== 0) return "—";
   const m = Math.floor(sec / 60);
