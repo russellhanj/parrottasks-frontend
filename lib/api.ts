@@ -8,9 +8,9 @@ async function get<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  apiHealth: () => get<{ ok: boolean }>("/healthz"),
-  dbHealth: () => get<{ ok: boolean; error?: string }>("/db/health"),
-  listRecordings: () => get<Array<{ id: string }>>("/recordings"),
-  listTasksFor: (id: string) =>
-    get<Array<{ id: number }>>(`/recordings/${id}/tasks`),
+  apiHealth: (init?: RequestInit) => get<{ ok: boolean }>("/healthz", init),
+  dbHealth: (init?: RequestInit) => get<{ ok: boolean; error?: string }>("/db/health", init),
+  listRecordings: (init?: RequestInit) => get<Array<{ id: string }>>("/recordings", init),
+  listTasksFor: (id: string, init?: RequestInit) =>
+    get<Array<{ id: number }>>(`/recordings/${id}/tasks`, init),
 };

@@ -5,6 +5,16 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 
 type Health = "checking" | "healthy" | "down";
+// 👇 add this helper at top-level
+function errorMessage(e: unknown): string {
+  if (e instanceof Error) return e.message;
+  if (typeof e === "string") return e;
+  try {
+    return JSON.stringify(e);
+  } catch {
+    return "Unknown error";
+  }
+}
 
 export default function Page() {
   const [apiHealth, setApiHealth] = useState<Health>("checking");
@@ -12,44 +22,45 @@ export default function Page() {
   const [recordingCount, setRecordingCount] = useState<number | null>(null);
   const [taskCount, setTaskCount] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
-
+  
   useEffect(() => {
-    let cancelled = false;
+  let cancelled = false;
 
-    (async () => {
-      try {
-        // API health
-        const apiOk = await api.apiHealth().then((r) => r.ok).catch(() => false);
-        if (!cancelled) setApiHealth(apiOk ? "healthy" : "down");
+  (async () => {
+    try {
+      // API health
+      const apiOk = await api.apiHealth().then((r) => r.ok).catch(() => false);
+      if (!cancelled) setApiHealth(apiOk ? "healthy" : "down");
 
-        // DB health
-        const dbOk = await api.dbHealth().then((r) => r.ok).catch(() => false);
-        if (!cancelled) setDbHealth(dbOk ? "healthy" : "down");
+      // DB health
+      const dbOk = await api.dbHealth().then((r) => r.ok).catch(() => false);
+      if (!cancelled) setDbHealth(dbOk ? "healthy" : "down");
 
-        // Recordings + tasks
-        const recs = await api.listRecordings().catch(() => []);
-        if (!cancelled) setRecordingCount(recs.length);
+      // Recordings + tasks
+      const recs = await api.listRecordings().catch(() => []);
+      if (!cancelled) setRecordingCount(recs.length);
 
-        // Sum tasks across these recordings (lightweight for MVP)
-        const counts = await Promise.all(
-          recs.slice(0, 25).map((r) =>
-            api.listTasksFor(r.id).then((ts) => ts.length).catch(() => 0)
-          )
-        );
-        if (!cancelled) setTaskCount(counts.reduce((a, b) => a + b, 0));
-      } catch (e: any) {
-        if (!cancelled) setError(e?.message ?? "Failed to load stats");
-        if (!cancelled) {
-          setApiHealth("down");
-          setDbHealth("down");
-        }
+      // Sum tasks across these recordings (lightweight for MVP)
+      const counts = await Promise.all(
+        recs.slice(0, 25).map((r) =>
+          api.listTasksFor(r.id).then((ts) => ts.length).catch(() => 0)
+        )
+      );
+      if (!cancelled) setTaskCount(counts.reduce((a, b) => a + b, 0));
+    } catch (e: unknown) {        // <- typed unknown
+      if (!cancelled) {
+        setError(errorMessage(e)); // <- safe stringify
+        setApiHealth("down");
+        setDbHealth("down");
       }
-    })();
+    }
+  })();
 
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  return () => {
+    cancelled = true;
+  };
+}, []);
+
 
   const apiLabel = useMemo(() => labelFor(apiHealth), [apiHealth]);
   const dbLabel = useMemo(() => labelFor(dbHealth), [dbHealth]);
