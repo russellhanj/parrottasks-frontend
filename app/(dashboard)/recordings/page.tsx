@@ -27,7 +27,12 @@ export default function Page() {
       .then((data) => {
         if (cancelled) return;
         setHasMore(data.length > PAGE_SIZE);
-        setRows(data.slice(0, PAGE_SIZE));
+        setRows(
+          data.slice(0, PAGE_SIZE).map((r) => ({
+            ...r,
+            durationSec: r.durationSec ?? undefined,
+          }))
+        );
       })
       .catch((e) => {
         if (cancelled) return;
