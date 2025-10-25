@@ -4,13 +4,13 @@
 import { use, useEffect, useState } from "react";
 import { api } from "@/lib/api";
 
-// local types (avoid any)
+// local types
 type RecordingStatus = "uploaded" | "processing" | "transcribed" | "summarized" | "error";
 type RecDetail = {
   id: string;
   filename: string;
   createdAt: string;
-  durationSec?: number;
+  durationSec?: number; // keep as number | undefined locally
   status: RecordingStatus;
   summary?: string | null;
 };
@@ -26,16 +26,23 @@ type TaskItem = {
 };
 
 export default function Page({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params); // Next 15 params are a Promise
+  const { id } = use(params);
 
-  const [rec, setRec] = useState<RecDetail | null>(null);     // was any
-  const [tasks, setTasks] = useState<TaskItem[]>([]);         // was any[]
+  const [rec, setRec] = useState<RecDetail | null>(null);
+  const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
     let cancel = false;
     Promise.all([api.getRecording(id), api.listTasksFor(id)])
-      .then(([r, ts]) => { if (!cancel) { setRec(r); setTasks(ts); } })
+      .then(([r, ts]) => {
+        if (!cancel) {
+          // normalize durationSec: null -> undefined to satisfy RecDetail
+          const normalized: RecDetail = { ...r, durationSec: r.durationSec ?? undefined };
+          setRec(normalized);
+          setTasks(ts);
+        }
+      })
       .catch((e: unknown) => {
         const msg = e instanceof Error ? e.message : String(e);
         if (!cancel) setErr(msg);
