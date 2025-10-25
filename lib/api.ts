@@ -8,18 +8,6 @@ async function get<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-async function post<T, B = unknown>(path: string, body: B, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
-    method: "POST",
-    headers: { "content-type": "application/json", ...(init?.headers || {}) },
-    body: JSON.stringify(body),
-    cache: "no-store",
-    ...init,
-  });
-  if (!res.ok) throw new Error(`${path} ${res.status} ${await res.text()}`);
-  return res.json() as Promise<T>;
-}
-
 export interface ListOpts { limit?: number; offset?: number }
 export type RecordingStatus = "uploaded" | "processing" | "transcribed" | "summarized" | "error";
 
@@ -51,11 +39,11 @@ export interface CreateRecordingResponse extends RecordingRow {
 async function createRecording(file: File, userId = 1, init?: RequestInit): Promise<CreateRecordingResponse> {
   const form = new FormData();
   form.append("file", file, file.name);
-  form.append("user_id", String(userId)); // matches FastAPI Form(...) param
+  form.append("user_id", String(userId));
 
   const res = await fetch(`${BASE}/recordings`, {
     method: "POST",
-    body: form,            // ⚠️ do NOT set Content-Type; browser sets it with boundary
+    body: form, // let the browser set Content-Type with boundary
     cache: "no-store",
     ...init,
   });
@@ -69,10 +57,7 @@ async function createRecording(file: File, userId = 1, init?: RequestInit): Prom
 
 export const api = {
   apiHealth: (init?: RequestInit) => get<{ ok: boolean }>("/healthz", init),
-
-  dbHealth: (init?: RequestInit) =>
-    get<{ ok: boolean; error?: string }>("/db/health", init),
-
+  dbHealth: (init?: RequestInit) => get<{ ok: boolean; error?: string }>("/db/health", init),
   listRecordings: (opts: ListOpts = {}, init?: RequestInit) => {
     const q = new URLSearchParams();
     if (opts.limit != null) q.set("limit", String(opts.limit));
@@ -80,16 +65,11 @@ export const api = {
     const qs = q.toString();
     return get<RecordingRow[]>(`/recordings${qs ? `?${qs}` : ""}`, init);
   },
-
   getRecording: (id: string, init?: RequestInit) =>
     get<RecordingRow & { summary?: string | null }>(`/recordings/${id}`, init),
-
   listTasksFor: (id: string, init?: RequestInit) =>
     get<TaskItem[]>(`/recordings/${id}/tasks`, init),
-
   stats: (init?: RequestInit) =>
     get<{ recordings: number; tasks: number }>("/stats", init),
-
-  // ✅ Real upload (multipart)
   createRecording,
 };

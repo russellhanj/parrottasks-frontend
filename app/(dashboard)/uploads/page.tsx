@@ -1,9 +1,16 @@
+// app/(dashboard)/uploads/page.tsx
 "use client";
 
 import * as React from "react";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+
+function getErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === "string") return err;
+  try { return JSON.stringify(err); } catch { return "Unknown error"; }
+}
 
 type Item = {
   file: File;
@@ -100,14 +107,12 @@ export default function Page() {
 
       setItems((prev) =>
         prev.map((it, i) =>
-          i === idx
-            ? { ...it, id: res.id, status: "done", progress: 100 }
-            : it
+          i === idx ? { ...it, id: res.id, status: "done", progress: 100 } : it
         )
       );
-    } catch (err: any) {
+    } catch (err: unknown) {                 // <-- changed
       clearInterval(progressTimer);
-      const msg = String(err?.message || "Upload failed");
+      const msg = getErrorMessage(err);     // <-- safe extraction
       toast.error(msg);
       setItems((prev) =>
         prev.map((it, i) =>
@@ -116,6 +121,7 @@ export default function Page() {
       );
     }
   }
+
 
   return (
     <section className="space-y-6">
