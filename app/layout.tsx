@@ -1,5 +1,7 @@
+// app/layout.tsx
 import "./globals.css";
 import Nav from "@/components/layout/Nav";
+import { Toaster } from "sonner";
 
 export const metadata = {
   title: "ParrotTasks",
@@ -19,6 +21,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <footer className="mx-auto max-w-6xl px-4 sm:px-6 mt-12 text-xs text-gray-500 pb-8">
           © {new Date().getFullYear()} ParrotTasks
         </footer>
+
+        {/* Toasts */}
+        <Toaster richColors position="bottom-right" />
       </body>
     </html>
   );

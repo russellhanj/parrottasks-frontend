@@ -4,7 +4,7 @@ const BASE =
 
 async function get<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, { ...init, cache: "no-store" });
-  if (!res.ok) throw new Error(`${path} ${res.status}`);
+  if (!res.ok) throw new Error(`${path} ${res.status} ${await res.text()}`);
   return res.json() as Promise<T>;
 }
 
@@ -16,7 +16,7 @@ async function post<T, B = unknown>(path: string, body: B, init?: RequestInit): 
     cache: "no-store",
     ...init,
   });
-  if (!res.ok) throw new Error(`${path} ${res.status}`);
+  if (!res.ok) throw new Error(`${path} ${res.status} ${await res.text()}`);
   return res.json() as Promise<T>;
 }
 
@@ -27,7 +27,7 @@ export interface RecordingRow {
   id: string;
   filename: string;
   createdAt: string;
-  durationSec?: number;
+  durationSec?: number | null;
   status: RecordingStatus;
 }
 
@@ -40,6 +40,31 @@ export interface TaskItem {
   priority?: "low" | "med" | "high" | null;
   status?: "todo" | "doing" | "done";
   confidence?: number | null;
+}
+
+export interface CreateRecordingResponse extends RecordingRow {
+  fileSize?: number;
+  mimeType?: string;
+  sha256?: string;
+}
+
+async function createRecording(file: File, userId = 1, init?: RequestInit): Promise<CreateRecordingResponse> {
+  const form = new FormData();
+  form.append("file", file, file.name);
+  form.append("user_id", String(userId)); // matches FastAPI Form(...) param
+
+  const res = await fetch(`${BASE}/recordings`, {
+    method: "POST",
+    body: form,            // ⚠️ do NOT set Content-Type; browser sets it with boundary
+    cache: "no-store",
+    ...init,
+  });
+
+  if (!res.ok) {
+    const msg = await res.text().catch(() => "");
+    throw new Error(`/recordings ${res.status} ${msg}`);
+  }
+  return res.json() as Promise<CreateRecordingResponse>;
 }
 
 export const api = {
@@ -62,11 +87,9 @@ export const api = {
   listTasksFor: (id: string, init?: RequestInit) =>
     get<TaskItem[]>(`/recordings/${id}/tasks`, init),
 
-  // used by the dashboard (optional, but recommended)
   stats: (init?: RequestInit) =>
     get<{ recordings: number; tasks: number }>("/stats", init),
 
-  // MVP upload flow (create row with status=uploaded; wire real upload later)
-  createRecording: (filename: string, init?: RequestInit) =>
-    post<{ id: string }, { filename: string }>("/recordings", { filename }, init),
+  // ✅ Real upload (multipart)
+  createRecording,
 };
