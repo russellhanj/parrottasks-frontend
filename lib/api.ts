@@ -73,3 +73,11 @@ export const api = {
     get<{ recordings: number; tasks: number }>("/stats", init),
   createRecording,
 };
+
+export async function processRecording(id: string) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recordings/${id}/process`, {
+    method: 'POST',
+  });
+  if (!res.ok) throw new Error('Failed to enqueue processing');
+  return res.json() as Promise<{ ok: boolean; status: string; jobId: string | null }>;
+}
